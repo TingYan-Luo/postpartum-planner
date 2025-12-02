@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { X, Clock, ChefHat, Info, Loader2, Sparkles, Share2, Download } from 'lucide-react';
 import { RecipeDetails } from '../types';
-import { generateRecipeDetails } from '../services/geminiService';
+import { generateRecipeDetails } from '../services/dsService';
 import html2canvas from 'html2canvas';
 
 interface RecipeModalProps {

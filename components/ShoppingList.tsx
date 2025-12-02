@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShoppingItem, ShoppingList as ShoppingListType } from '../types';
-import { generateShoppingListAI } from '../services/geminiService';
+import { generateShoppingListAI } from '../services/dsService';
 import { ShoppingBag, Check, RefreshCw, Trash2, CalendarDays } from 'lucide-react';
 
 interface ShoppingListProps {

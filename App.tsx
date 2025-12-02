@@ -3,7 +3,7 @@ import { UserSettings, DailyPlan, ShoppingList as ShoppingListType } from './typ
 import DailyPlanView from './components/DailyPlanView';
 import Settings from './components/Settings';
 import ShoppingList from './components/ShoppingList';
-import { generateDailyPlan } from './services/geminiService';
+import { generateDailyPlan } from './services/dsService';
 import { ShoppingCart, Settings as SettingsIcon, UtensilsCrossed, ChefHat } from 'lucide-react';
 
 // Default initial state
