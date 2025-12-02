@@ -23,6 +23,7 @@ const getPhaseInfo = (day: number) => {
   return { name: "第三阶段：滋补养颜", focus: "进补养身，改善体质，根据体质进行深度滋养。" };
 };
 
+/** 获取每日食谱计划 */
 export const generateDailyPlan = async (
   day: number,
   settings: UserSettings,
@@ -111,6 +112,7 @@ export const generateDailyPlan = async (
   }
 };
 
+/** 根据菜名获取菜谱详情 */
 export const generateRecipeDetails = async (dishName: string): Promise<RecipeDetails> => {
   // Details are generally static for a dish name, so we can also use a seed
   const seed = generateSeed(dishName);
@@ -160,6 +162,7 @@ export const generateRecipeDetails = async (dishName: string): Promise<RecipeDet
   }
 };
 
+/** 获取采购清单 */
 export const generateShoppingListAI = async (
   mealNames: string[],
   days: number

@@ -80,7 +80,7 @@ export const generateDailyPlan = async (
 ): Promise<DailyPlan> => {
   const phase = getPhaseInfo(day);
   const lactationInstruction = settings.lactationSupport 
-    ? "需要催乳：请在食谱中适当安排下奶的汤水（如鲫鱼汤、猪蹄汤、木瓜等），并保证水分充足。"
+    ? "需要催乳：请在食谱中适当安排科学下奶的汤水（如去油鲫鱼汤、去油猪蹄汤、木瓜等），并保证水分充足。"
     : "无需催乳：饮食清淡均衡即可，避免过度摄入油腻下奶汤水，防止堵奶。";
   
   const seedString = `${settings.startDate}-Day-${day}`;
@@ -91,7 +91,7 @@ export const generateDailyPlan = async (
   const userPrompt = `
     请为坐月子的产妇生成第 ${day} 天的月子餐计划（所属阶段：${phase.name}）。
     阶段重点：${phase.focus}。
-    用户忌口/不喜欢：${settings.dislikes.join("、") || "无"}。
+    用户忌口/不喜欢：${settings.dislikes.join("、") || "无"}。请不要仅仅去除某项食材，而是直接更换菜品。
     用户过敏源：${settings.allergies.join("、") || "无"}。
     ${lactationInstruction}
     
