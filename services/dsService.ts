@@ -3,7 +3,7 @@ import { DailyPlan, RecipeDetails, ShoppingItem, UserSettings } from "../types";
 // Configuration for DeepSeek
 // Prioritize DS_API_KEY, fallback to API_KEY if user just swaps the key in the same env var
 const API_KEY = process.env.DS_API_KEY || process.env.API_KEY;
-const API_URL = "https://api.deepseek.com/chat/completions";
+const API_URL = process.env.SEV_API_URL || "https://api.deepseek.com/chat/completions";
 const MODEL_ID = "deepseek-chat"; // DeepSeek V3
 
 // Helper to generate a deterministic integer seed from strings
