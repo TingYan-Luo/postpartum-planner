@@ -153,7 +153,7 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ dishName, isOpen, onClose }) 
                   {details.ingredients.map((ing, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-gray-600 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
                       <div className="w-1.5 h-1.5 bg-primary-300 rounded-full shrink-0" />
-                      <span className="text-sm truncate">{ing}</span>
+                      <span className="text-sm">{ing}</span>
                     </div>
                   ))}
                 </div>

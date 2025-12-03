@@ -101,7 +101,7 @@ const DailyPlanView: React.FC<DailyPlanViewProps> = ({
 
                 {/* Middle: Content */}
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-gray-800 mb-1 truncate group-hover:text-primary-600 transition-colors">{meal.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-primary-600 transition-colors">{meal.name}</h3>
                     <p className="text-xs text-gray-500 line-clamp-1 mb-2">{meal.description}</p>
                     <div className="flex gap-2 flex-wrap">
                         {meal.tags.slice(0, 2).map(tag => (
