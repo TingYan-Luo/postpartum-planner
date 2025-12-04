@@ -103,10 +103,10 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewingDay]);
 
-  const handleGeneratePlan = async (day: number = viewingDay) => {
+  const handleGeneratePlan = async (day: number = viewingDay, refresh?: boolean) => {
     setLoadingPlan(true);
     try {
-      const plan = await generateDailyPlan(day, settings);
+      const plan = await generateDailyPlan(day, settings, refresh);
       setDailyPlan(plan);
     } catch (error) {
       console.error(error);
@@ -116,32 +116,39 @@ const App: React.FC = () => {
   };
 
   const generateMealsForPeriod = async (days: number): Promise<string[]> => {
-    const mealNames: string[] = [];
+    // const mealNames: string[] = [];
     
     // Logic: Shopping list usually starts from TODAY (real life), not the viewed day in history
     // But we can include the currently viewed day if it is in the future.
     // For simplicity, let's generate from currentRealDay onwards.
     
-    const promises = [];
-    for (let i = 0; i < days; i++) {
-        const dayToFetch = Math.min(currentRealDay + i, 30);
+    // const promises = [];
+    // for (let i = 0; i < days; i++) {
+    //     const dayToFetch = Math.min(currentRealDay + i, 30);
         
-        // Optimize: if the currently viewed plan is one of the days we need, use it
-        if (dailyPlan && dailyPlan.day === dayToFetch) {
-            promises.push(Promise.resolve(dailyPlan));
-        } else {
-            promises.push(generateDailyPlan(dayToFetch, settings));
-        }
-    }
+    //     // Optimize: if the currently viewed plan is one of the days we need, use it
+    //     if (dailyPlan && dailyPlan.day === dayToFetch) {
+    //         promises.push(Promise.resolve(dailyPlan));
+    //     } else {
+    //         promises.push(generateDailyPlan(dayToFetch, settings));
+    //     }
+    // }
     
-    try {
-        const plans = await Promise.all(promises);
-        plans.forEach(p => mealNames.push(...p.meals.map(m => m.name)));
-    } catch (e) {
-        console.warn("Could not fetch all future days");
-    }
+    // try {
+    //     const plans = await Promise.all(promises);
+    //     plans.forEach(p => mealNames.push(...p.meals.map(m => m.name)));
+    // } catch (e) {
+    //     console.warn("Could not fetch all future days");
+    // }
 
-    return mealNames;
+    // return mealNames;
+    const oldPlans = JSON.parse(localStorage.getItem('pp_dailyPlan_list') || '[]');
+    if (oldPlans.length < 7) {
+      return;
+    }
+    const meals = [];
+    oldPlans.map(item => item.meals.map(m => meals.push(m.name)));
+    return meals;
   };
 
   return (
@@ -180,7 +187,7 @@ const App: React.FC = () => {
             <DailyPlanView 
               plan={dailyPlan} 
               loading={loadingPlan} 
-              onRefresh={() => handleGeneratePlan(viewingDay)}
+              onRefresh={() => handleGeneratePlan(viewingDay, true)}
               viewingDay={viewingDay}
               onChangeDay={setViewingDay}
               realDay={currentRealDay}

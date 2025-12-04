@@ -39,7 +39,7 @@ async function callDeepSeek(messages: any[], seed: number, jsonMode: boolean = t
       body: JSON.stringify({
         model: MODEL_ID,
         messages: messages,
-        temperature: 1.0, // Use seed for determinism instead of low temp if possible, or balance it
+        temperature: 1.3, // Use seed for determinism instead of low temp if possible, or balance it
         seed: seed,
         response_format: jsonMode ? { type: "json_object" } : { type: "text" },
         stream: false
@@ -76,9 +76,16 @@ async function callDeepSeek(messages: any[], seed: number, jsonMode: boolean = t
 export const generateDailyPlan = async (
   day: number,
   settings: UserSettings,
-  existingPlan?: DailyPlan
+  refresh?: boolean,
 ): Promise<DailyPlan> => {
   const phase = getPhaseInfo(day);
+  const oldPlans = JSON.parse(localStorage.getItem('pp_dailyPlan_list') || '[]');
+  const currentPlan = oldPlans.find(item => item.day === day);
+  if (!refresh && currentPlan) {
+    return currentPlan;
+  }
+  const usedPlans = oldPlans.filter(item =>item.day <= day && (item.day > day - 3));
+  const usedMealsName = usedPlans?.map(item => item.meals.map(meal => meal.name).join(',')).join(',');
   const lactationInstruction = settings.lactationSupport 
     ? "需要催乳：请在食谱中适当安排科学下奶的汤水（如去油鲫鱼汤、去油猪蹄汤、木瓜等），并保证水分充足。"
     : "无需催乳：饮食清淡均衡即可，避免过度摄入油腻下奶汤水，防止堵奶。";
@@ -86,22 +93,26 @@ export const generateDailyPlan = async (
   const seedString = `${settings.startDate}-Day-${day}`;
   const consistencySeed = generateSeed(seedString);
 
-  const systemPrompt = `你是一位专业的月子餐营养师。请根据产妇的产后天数和身体状况，生成科学的膳食计划。请务必以纯 JSON 格式返回数据。`;
+  const systemPrompt = `你是一位专业的月子餐营养师。请根据现代营养学、中国居民膳食指南和产褥期生理特点，以及产妇的产后天数和身体状况，生成科学的膳食计划。请务必以纯 JSON 格式返回数据。`;
 
+  const dayText = refresh ? `第 ${day} 天` : `第 ${day} 天到 ${day+ 7 } 天`;
   const userPrompt = `
-    请为坐月子的产妇生成第 ${day} 天的月子餐计划（所属阶段：${phase.name}）。
-    阶段重点：${phase.focus}。
-    用户忌口/不喜欢：${settings.dislikes.join("、") || "无"}。请不要仅仅去除某项食材，而是直接更换菜品。
+    请为坐月子的产妇生成${dayText}的每日月子餐计划。
+    按“代谢排毒（第1周）→脏器修复（第2周）→营养强化（第3-4周）”三阶段设计。
+    已使用过的菜品： ${usedMealsName}。
+    用户忌口/不喜欢：${settings.dislikes.join("、") || "无"}，菜品中请不要出现用户忌口的食物类型。
     用户过敏源：${settings.allergies.join("、") || "无"}。
-    ${lactationInstruction}
+    ${lactationInstruction}.
     
     遵循原则：
     1. 结合传统中医坐月子理念（温补、忌生冷）和现代营养学（低盐、高蛋白）。
     2. 提供5顿餐点：早餐、早加餐、午餐、午加餐、晚餐。
     3. 菜名要地道、具体（例如“小米红糖粥”而不是“粥”）。
+    4. 菜品要求3天内不能重复。
     
     请严格按照以下 JSON 结构返回：
-    {
+    [{
+      "day": "第几天，只需要返回数字",
       "meals": [
         {
           "name": "具体的菜品名称",
@@ -111,7 +122,7 @@ export const generateDailyPlan = async (
           "tags": ["标签1", "标签2"]
         }
       ]
-    }
+    }]
   `;
 
   try {
@@ -123,21 +134,33 @@ export const generateDailyPlan = async (
       consistencySeed
     );
     
-    const mappedMeals = (data.meals || []).map((m: any, index: number) => ({
-      id: `${day}-${index}-${consistencySeed}`,
-      name: m.name,
-      type: m.type,
-      description: m.description,
-      calories: m.calories,
-      tags: m.tags || [],
-      isCompleted: false
+    const mappedMeals = data.map(item => ({
+      day: Number(item.day),
+      phase: getPhaseInfo(item.day).name,
+      meals: (item.meals || []).map((m: any, index: number) => ({
+        id: `${day}-${index}-${consistencySeed}`,
+        name: m.name,
+        type: m.type,
+        description: m.description,
+        calories: m.calories,
+        tags: m.tags || [],
+        isCompleted: false
+      }))
     }));
 
-    return {
-      day,
-      phase: phase.name,
-      meals: mappedMeals
-    };
+    const newPlans = [...oldPlans];
+
+    mappedMeals.forEach(item => {
+      const index = newPlans.findIndex(p => p.day === item.day);
+      if (index > -1) {
+        newPlans[index] = item;
+      } else {
+        newPlans.push(item);
+      }
+    });
+
+    localStorage.setItem('pp_dailyPlan_list', JSON.stringify(newPlans))
+    return mappedMeals.find(item => item.day === day);
   } catch (error) {
     console.error("Plan Generation Error:", error);
     throw new Error("生成食谱失败，请重试。");
